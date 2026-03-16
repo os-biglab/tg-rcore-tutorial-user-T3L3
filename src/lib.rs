@@ -44,9 +44,24 @@ fn panic_handler(panic_info: &core::panic::PanicInfo) -> ! {
 }
 
 pub fn getchar() -> u8 {
+    getchar_blocking()
+}
+
+pub fn getchar_poll() -> Option<u8> {
     let mut c = [0u8; 1];
-    read(STDIN, &mut c);
-    c[0]
+    match read(STDIN, &mut c) {
+        1 => Some(c[0]),
+        _ => None,
+    }
+}
+
+pub fn getchar_blocking() -> u8 {
+    loop {
+        if let Some(c) = getchar_poll() {
+            return c;
+        }
+        sched_yield();
+    }
 }
 
 struct Console;
