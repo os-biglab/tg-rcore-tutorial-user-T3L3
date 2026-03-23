@@ -11,3 +11,13 @@ step = 0x0020_0000
 cases = [
     "snake",
 ]
+
+[ch4]
+cases = [
+    "tetris",
+]
+
+[ch4_exercise]
+cases = [
+    "tetris",
+]
