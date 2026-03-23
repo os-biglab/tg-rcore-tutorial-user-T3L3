@@ -1,12 +1,12 @@
 [ch3]
-base = 0x8040_0000
+base = 0x8100_0000
 step = 0x0020_0000
 cases = [
     "snake",
 ]
 
 [ch3_exercise]
-base = 0x8040_0000
+base = 0x8100_0000
 step = 0x0020_0000
 cases = [
     "snake",

@@ -6,6 +6,7 @@
 //! - 其余辅助函数（sleep/pipe_*）展示了常见 syscall 组合用法。
 
 mod heap;
+mod tangram;
 
 extern crate alloc;
 
@@ -13,6 +14,9 @@ use tg_console::log;
 
 pub use tg_console::{print, println};
 pub use tg_syscall::*;
+
+const SYSCALL_FRAMEBUFFER: usize = 0x1000_0001;
+const SYSCALL_FRAMEBUFFER_FLUSH: usize = 0x1000_0002;
 
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".text.entry")]
@@ -45,6 +49,70 @@ fn panic_handler(panic_info: &core::panic::PanicInfo) -> ! {
 
 pub fn getchar() -> u8 {
     getchar_blocking()
+}
+
+#[cfg(target_arch = "riscv64")]
+pub fn framebuffer_info() -> Option<(*mut u8, usize, usize, usize)> {
+    let fb_ptr: isize;
+    let fb_len: usize;
+    let width: usize;
+    let height: usize;
+    unsafe {
+        core::arch::asm!(
+            "ecall",
+            inlateout("a0") 0isize => fb_ptr,
+            lateout("a1") fb_len,
+            lateout("a2") width,
+            lateout("a3") height,
+            in("a7") SYSCALL_FRAMEBUFFER,
+        );
+    }
+    if fb_ptr <= 0 || fb_len == 0 || width == 0 || height == 0 {
+        None
+    } else {
+        Some((fb_ptr as *mut u8, fb_len, width, height))
+    }
+}
+
+#[cfg(not(target_arch = "riscv64"))]
+pub fn framebuffer_info() -> Option<(*mut u8, usize, usize, usize)> {
+    None
+}
+
+#[cfg(target_arch = "riscv64")]
+pub fn framebuffer_flush() -> isize {
+    let ret: isize;
+    unsafe {
+        core::arch::asm!(
+            "ecall",
+            inlateout("a0") 0isize => ret,
+            in("a7") SYSCALL_FRAMEBUFFER_FLUSH,
+        );
+    }
+    ret
+}
+
+#[cfg(not(target_arch = "riscv64"))]
+pub fn framebuffer_flush() -> isize {
+    -1
+}
+
+pub fn render_block(block: usize) -> isize {
+    let Some((fb_ptr, fb_len, width, height)) = framebuffer_info() else {
+        return -1;
+    };
+
+    let used_len = width
+        .checked_mul(height)
+        .and_then(|pixels| pixels.checked_mul(4))
+        .unwrap_or(0);
+    if used_len == 0 || used_len > fb_len {
+        return -1;
+    }
+
+    let framebuffer = unsafe { core::slice::from_raw_parts_mut(fb_ptr, used_len) };
+    tangram::render_block_by_index(framebuffer, width, height, block);
+    framebuffer_flush()
 }
 
 pub fn getchar_poll() -> Option<u8> {
