@@ -35,3 +35,17 @@ cases = [
     "user_shell",
     "pingpong",
 ]
+
+[ch6]
+cases = [
+    "initproc",
+    "user_shell",
+    "breakout",
+]
+
+[ch6_exercise]
+cases = [
+    "initproc",
+    "user_shell",
+    "breakout",
+]
