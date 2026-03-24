@@ -49,3 +49,17 @@ cases = [
     "user_shell",
     "breakout",
 ]
+
+[ch8]
+cases = [
+    "initproc",
+    "user_shell",
+    "doom",
+]
+
+[ch8_exercise]
+cases = [
+    "initproc",
+    "user_shell",
+    "doom",
+]

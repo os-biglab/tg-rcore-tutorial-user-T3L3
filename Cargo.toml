@@ -1,7 +1,7 @@
 [package]
 name = "tg-rcore-tutorial-user-T3L3"
 description = "User-space apps for ch3-T3L3: ASCII snake game with polling and interrupt-style control."
-version = "0.0.1-preview.4"
+version = "0.0.1-preview.5"
 edition = "2024"
 authors = ["Feiran Qin <qfr23@mails.tsinghua.edu.cn>"]
 repository = "https://github.com/os-biglab/tg-rcore-tutorial-user-T3L3"
@@ -26,5 +26,8 @@ panic = "abort"
 tg-console = { package = "tg-rcore-tutorial-console", version = "0.4.8" }
 tg-syscall = { package = "tg-rcore-tutorial-syscall", version = "0.4.8", features = ["user"] }
 customizable-buddy = "0.0.2"
+
+[build-dependencies]
+cc = "1"
 
 [workspace]
