@@ -21,3 +21,17 @@ cases = [
 cases = [
     "tetris",
 ]
+
+[ch5]
+cases = [
+    "initproc",
+    "user_shell",
+    "pingpong",
+]
+
+[ch5_exercise]
+cases = [
+    "initproc",
+    "user_shell",
+    "pingpong",
+]
