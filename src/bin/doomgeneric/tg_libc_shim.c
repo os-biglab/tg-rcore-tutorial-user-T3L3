@@ -508,11 +508,17 @@ FILE *fopen(const char *path, const char *mode) {
             return 0;
         }
 
+        // 第一遍：只探测文件大小（避免 free() 无效导致扩容泄漏）。
         size_t size = 0;
         unsigned char probe[4096];
         for (;;) {
             int32_t n = tg_sys_read(fd, probe, sizeof(probe));
-            if (n <= 0) {
+            if (n < 0) {
+                tg_sys_close(fd);
+                f->used = 0;
+                return 0;
+            }
+            if (n == 0) {
                 break;
             }
             size += (size_t)n;
@@ -524,6 +530,7 @@ FILE *fopen(const char *path, const char *mode) {
         }
         tg_sys_close(fd);
 
+        // 第二遍：按最终大小一次分配并完整读入。
         fd = tg_sys_open(path, TG_O_RDONLY);
         if (fd < 0) {
             f->used = 0;
@@ -546,6 +553,13 @@ FILE *fopen(const char *path, const char *mode) {
             got += (size_t)n;
         }
         tg_sys_close(fd);
+        if (tg_dbg_is_save_path(path)) {
+            tg_dbg_raw("[doom-save] open-r-close path='");
+            tg_dbg_raw(path);
+            tg_dbg_raw("' rc=0 bytes=");
+            tg_dbg_i32((int32_t)got);
+            tg_dbg_raw("\n");
+        }
 
         f->data = buf;
         f->size = got;
